@@ -1,0 +1,24 @@
+<div id="map" style="height: 500px;"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([12.9716, 77.5946], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    var trucks = {}; // Store markers by truck_id
+
+    const socket = new WebSocket('ws://localhost:8000/ws/admin');
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const { truck_id, latitude, longitude, alert } = data;
+
+        if (!trucks[truck_id]) {
+            trucks[truck_id] = L.marker([latitude, longitude]).addTo(map);
+        } else {
+            trucks[truck_id].setLatLng([latitude, longitude]);
+        }
+
+        if (alert) {
+            trucks[truck_id].bindPopup(`ALERT: ${alert}`).openPopup();
+        }
+    };
+</script>
